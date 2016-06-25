@@ -36,10 +36,12 @@ public class Main {
 		double randValue;
 		for (int row = 0; row < data.length; row++) {
 			for (int column = 0; column < data[0].length; column++) {
-				randValue = (double)(rand.nextInt(4096)) - 2048;
-				randValue = randValue/1000;
+				randValue = (double)(rand.nextInt(1024)) - 512;
+				randValue = randValue/100;
 				data[row][column] = randValue;
+
 			}
+
 		}
 	}
 	

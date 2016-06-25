@@ -5,7 +5,9 @@ import java.util.Random;
 public class Genetic implements Runnable {
 	private double[][] population;
 	double sumOfRow;
+	private final int tournamentSize = 3;
 	int generation;
+
 	ArrayList<Double> arrayOfMin = new ArrayList<Double>();
 
 	// init
@@ -24,7 +26,7 @@ public class Genetic implements Runnable {
 
 		System.out.println("START");
 
-		while (generation < 500000) {
+		while (generation < 5000) {
 			printStatus(generation);
 			int counter = 0;
 
@@ -32,15 +34,17 @@ public class Genetic implements Runnable {
 
 				int parent1 = tournamentSelection(-1);
 				int parent2 = tournamentSelection(parent1);
-				double child[][] = new double[2][this.population[0].length];
-				child = crossover(parent1, parent2);
-				mutate(child);
+				// double child[][] = new double[2][this.population[0].length];
+				double child[][] = crossover(parent1, parent2);
+
+				child = mutate(child);
 				System.arraycopy(child[0], 0, newGeneration[counter], 0,
 						child[0].length);
 				System.arraycopy(child[1], 0, newGeneration[counter + 1], 0,
-						child[0].length);
+						child[1].length);
 
 				counter += 2;
+
 			}
 
 			replace(newGeneration);
@@ -54,15 +58,25 @@ public class Genetic implements Runnable {
 	 */
 	public double getFitness(int index) {
 		double sum = 0;
-		for (int i = 0; i < this.population[index].length - 1; i++) {
+
+		for (int i = 0; i < this.population[index].length; i++) {
+			// Scheweful Function
+			// sum += this.population[index][i]
+			// * (Math.sin(Math.sqrt(Math.abs(this.population[index][i]))));
+
+
 			// RosenBrock Function
-			sum += 100
-					* Math.pow(
-							(this.population[index][i + 1])
-									- Math.pow(this.population[index][i], 2), 2)
-					+ Math.pow((this.population[index][i]) - 1, 2);
+//			sum += 100
+//					* Math.pow(
+//							(this.population[index][i + 1])
+//									- Math.pow(this.population[index][i], 2), 2)
+//					+ Math.pow((this.population[index][i]) - 1, 2);
+			//Rastrigin
+			sum += Math.pow(this.population[index][i],2) - 10*Math.cos(2*3.142*this.population[index][i]);
 
 		}
+		sum = 10*this.population[0].length + sum;
+		// sum = (418.982887 * this.population[index].length)-sum;
 
 		return sum;
 	}
@@ -97,29 +111,27 @@ public class Genetic implements Runnable {
 	 */
 	public double[][] crossover(int parent1, int parent2) {
 		Random rand = new Random();
-		int cutOffPoint = rand.nextInt(this.population[parent1].length);
-		int cutOffPoint2 = rand.nextInt(this.population[parent1].length);
-		double[][] child = new double[2][this.population[parent1].length];
+
+		double[][] child = new double[4][this.population[parent1].length];
+
+		System.arraycopy(this.population[parent1], 0, child[0], 0,
+				this.population[parent1].length);
+		System.arraycopy(this.population[parent2], 0, child[1], 0,
+				this.population[parent2].length);
 
 		if (rand.nextInt(10) <= 7) // 70% chance of crossover
 		{
-			for (int i = 0; i < this.population[parent1].length; i++) {
-				double val = i > cutOffPoint && i < cutOffPoint2 ? this.population[parent2][i]
-						: this.population[parent1][i];
-				double val2 = i > cutOffPoint && i < cutOffPoint2 ? this.population[parent1][i]
-						: this.population[parent2][i];
-				child[0][i] = val;
-				child[1][i] = val2;
-			}
 
-		} else // 30% chance of direct copy of best parent
-		{
-			int bestParent = getFitness(parent1) < getFitness(parent2) ? parent1
-					: parent2;
-			System.arraycopy(this.population[bestParent], 0, child[0], 0,
-					this.population[bestParent].length);
-			System.arraycopy(this.population[bestParent], 0, child[1], 0,
-					this.population[bestParent].length);
+			double temp = 0;
+			for (int i = 0; i < this.population[parent1].length; i++) {
+				if (rand.nextInt(10) < 5) {
+					temp = child[0][i];
+					child[0][i] = child[1][i];
+					child[1][i] = temp;
+				}
+
+			}
+			child = shuffleArray(child);
 
 		}
 		return child;
@@ -128,31 +140,33 @@ public class Genetic implements Runnable {
 	/*
 	 * loop through every cell with a 1% chance of mutating child
 	 */
-	public void mutate(double[][] child) {
+	public double[][] mutate(double[][] child) {
 		Random rand = new Random();
 		for (int r = 0; r < child.length; r++) {
+
 			for (int i = 0; i < child[1].length; i++) {
+
 				if (rand.nextInt(100) < 1) {
 
 					double RandomValue = rand.nextInt(1000) - 500;
-					if (generation < 500) {
+		
 						RandomValue = RandomValue / 1000;
-					} else {
-						RandomValue = RandomValue / 10000;
-					}
+				
+
 					double newNumber = child[r][i] + (RandomValue);
 
-					if (child[r][i] > 2.048 || child[r][i] < -2.048) {
+					if (child[r][i] > 5.12 || child[r][i] < -5.12) {
 						child[r][i] = 0;
 					} else {
 						child[r][i] = newNumber;
 					}
 
+
+					
 				}
-
 			}
-
 		}
+		return child;
 	}
 
 	/*
@@ -186,9 +200,25 @@ public class Genetic implements Runnable {
 
 	}
 
+	public double[][] shuffleArray(double[][] ar) {
+
+		Random rand = new Random();
+		for (int row = ar.length - 1; row > 0; row--) {
+			for (int col = ar[0].length - 1; col > 0; col--) {
+				int index = rand.nextInt(ar[0].length);
+				// Simple swap
+				double a = ar[row][index];
+				ar[row][index] = ar[row][col];
+				ar[row][col] = a;
+			}
+		}
+		return ar;
+	}
+
 	public ArrayList<Double> getArrayOfMin() {
 
 		return this.arrayOfMin;
 
 	}
+
 }
