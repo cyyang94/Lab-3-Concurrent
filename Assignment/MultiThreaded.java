@@ -1,9 +1,8 @@
-import java.util.Arrays;
 import java.util.Random;
 
 import org.jfree.ui.RefineryUtilities;
 
-public class Main {
+public class MultiThreaded {
 	public static void main(String[] args) {
 		long time = System.currentTimeMillis();
 		double[][] data = new double[300][100];
