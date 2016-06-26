@@ -3,30 +3,32 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.*;
 
-public class Genetic_Thread implements Callable<Double> {
+public class Genetic_Thread implements Callable<Boolean> {
 	private Population population;
 	private final int populationSize;
 	private final String function;
+	private Population newGeneration;
 
-	public Genetic_Thread(Population population,String function) {
+	public Genetic_Thread(Population population, String function, Population newGeneration) {
 		this.population = population;
 		this.populationSize = population.size();
 		this.function = function;
+		this.newGeneration = newGeneration;
 	}
 
-	public Double call() {
+	public Boolean call() throws Exception{
 		int generation = 0;
 		int parent1 = this.selector(-1, 3);
 		int parent2 = this.selector(parent1, 3);
 
 		double newCells[][] = new double[2][this.population.get(parent1).size()];
-		newCells = crossover(parent1, parent2);
 		
-		Children[] offSpring = new Children[2];
-		System.arraycopy(this.mutate(newCells), 0, offSpring, 0, 2);
-		
+		newCells = this.crossover(parent1,parent2);
 
-		return 0.1;
+		this.newGeneration.add(new Children(this.mutate(newCells[0]),this.function));
+		this.newGeneration.add(new Children(this.mutate(newCells[0]),this.function));
+		
+		return true;
 	}
 
 	/*
@@ -55,16 +57,6 @@ public class Genetic_Thread implements Callable<Double> {
 				}
 			}
 		}
-
-		// ---------------UNIT TEST--------------------------
-		System.out.println("UNIT TEST FOR selection");
-		for (int i = 0; i < tournamentSize; i++) {
-			System.out.println(" candidate " + candidates[i] + " fitness : "
-					+ this.population.get(candidates[i]).getFitness());
-		}
-		System.out.println("SELECTED " + fittest);
-		// ---------------UNIT TEST--------------------------
-
 		return fittest;
 	}
 
@@ -74,27 +66,15 @@ public class Genetic_Thread implements Callable<Double> {
 	public double[][] crossover(int parent1, int parent2) {
 		Random rand = new Random();
 		int numberOfCells = this.population.get(parent1).size();
-		int cutOffPoint = rand.nextInt((numberOfCells - 1) / 2) + 1;
-
-		int cutOffPoint2 = rand.nextInt(numberOfCells - cutOffPoint)
-				+ cutOffPoint;
 		double[][] child = new double[2][numberOfCells];
 
-		System.arraycopy(this.population.get(parent1), 0, child[0], 0,
+		System.arraycopy(this.population.get(parent1).getCells(), 0, child[0], 0,
 				numberOfCells);
-		System.arraycopy(this.population.get(parent2), 0, child[1], 0,
+		System.arraycopy(this.population.get(parent2).getCells(), 0, child[1], 0,
 				numberOfCells);
 
-		if (rand.nextInt(10) <= 7) // 70% chance of crossover
+		if (rand.nextInt(10) < 7) // 70% chance of crossover
 		{
-			// 2 point crossover
-			/*
-			 * for (int i = cutOffPoint; i < cutOffPoint2; i++) { child[0][i] =
-			 * this.population[parent2][i]; child[1][i] =
-			 * this.population[parent1][i]; }
-			 */
-			// uniform crossover
-
 			double temp = 0;
 			for (int i = 0; i < numberOfCells; i++) {
 				if (rand.nextInt(10) < 5) {
@@ -103,7 +83,20 @@ public class Genetic_Thread implements Callable<Double> {
 					child[1][i] = temp;
 				}
 			}
-
+			
+			//shuffle
+			for (int col = numberOfCells - 1; col > 0; col--) {
+				int index = rand.nextInt(numberOfCells);
+				int row = 0;
+				while (row < 2) {
+					// Simple swap
+					temp = child[row][index];
+					child[row][index] = child[row][col];
+					child[row][col] = temp;
+					row++;
+				}
+			}
+			
 		}
 		return child;
 	}
@@ -111,34 +104,25 @@ public class Genetic_Thread implements Callable<Double> {
 	/*
 	 * loop through every cell with a 1% chance of mutating child
 	 */
-	public Children[] mutate(double[][] cells) {
+	public double[] mutate(double[] cells) {
 		Random rand = new Random();
 		int numberOfCells = cells.length;
 
 		for (int i = 0; i < numberOfCells; i++) {
-			int counter = 0;
-			while (counter < 2) {
 				if (rand.nextInt(100) < 1) {
 					double RandomValue = rand.nextInt(1000) - 500;
 					RandomValue = RandomValue / 1000;
-					double newNumber = cells[counter][i] + (RandomValue);
+					double newNumber = cells[i] + (RandomValue);
 					if (newNumber > 500) {
 						newNumber = 500;
-					} else if (newNumber < -500) {
+					} 
+					else if (newNumber < -500) {
 						newNumber = -500;
 					}
-					cells[counter][i] = newNumber;
+					cells[i] = newNumber;
 				}
-				counter++;
 			}
-		}
 		
-		Children[] offSpring = {
-				new Children(cells[0],this.function),
-				new Children(cells[1],this.function)
-		};
-		 
-		return offSpring;
+		return cells;
 	}
-
 }
