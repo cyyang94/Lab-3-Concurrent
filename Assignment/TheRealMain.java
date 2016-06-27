@@ -20,16 +20,6 @@ public class TheRealMain {
 		
 		System.out.println("TOTAL TIME : " + (System.currentTimeMillis() - time));
 		
-		/*
-		LineChart_AWT chart = new LineChart_AWT(
-			      "Genetic Algorithm" ,
-			      "Genetic Algorithm Fitness",ga.getArrayOfMin());
-
-			      chart.pack( );
-			      RefineryUtilities.centerFrameOnScreen( chart );
-			      chart.setVisible( true );
-
-			      */
 	}
 	
 	public static void init(Population population) {
@@ -48,13 +38,4 @@ public class TheRealMain {
 		}
 	}
 	
-	public static void print(double[][] data){
-		for (int row = 0; row < data.length; row++) {
-			for (int column = 0; column < data[1].length; column++) {
-				System.out.print(data[row][column] + " ");
-			}
-			System.out.println();
-		}
-	}
-
 }

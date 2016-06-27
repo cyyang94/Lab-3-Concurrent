@@ -21,13 +21,11 @@ public class Genetic_package {
 		CompletionService<Boolean> completion = new ExecutorCompletionService<Boolean>(exec);
 		int generation = 0;
 		
-		ArrayList<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
 		while(generation < 500){
 		
 			System.out.println("START");
 			Population nextGeneration = new Population(300);
 			int counter = 0;
-			futures.clear();
 			
 			while(counter <= 150){
 				completion.submit(new Genetic_Thread(population,function,nextGeneration));

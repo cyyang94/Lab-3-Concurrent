@@ -9,25 +9,28 @@ public class Genetic_Thread implements Callable<Boolean> {
 	private final String function;
 	private Population newGeneration;
 
-	public Genetic_Thread(Population population, String function, Population newGeneration) {
+	public Genetic_Thread(Population population, String function,
+			Population newGeneration) {
 		this.population = population;
 		this.populationSize = population.size();
 		this.function = function;
 		this.newGeneration = newGeneration;
 	}
 
-	public Boolean call() throws Exception{
+	public Boolean call() throws Exception {
 		int generation = 0;
 		int parent1 = this.selector(-1, 3);
 		int parent2 = this.selector(parent1, 3);
 
 		double newCells[][] = new double[2][this.population.get(parent1).size()];
-		
-		newCells = this.crossover(parent1,parent2);
 
-		this.newGeneration.add(new Children(this.mutate(newCells[0]),this.function));
-		this.newGeneration.add(new Children(this.mutate(newCells[0]),this.function));
-		
+		newCells = this.crossover(parent1, parent2);
+
+		this.newGeneration.add(new Children(this.mutate(newCells[0]),
+				this.function));
+		this.newGeneration.add(new Children(this.mutate(newCells[0]),
+				this.function));
+
 		return true;
 	}
 
@@ -68,10 +71,10 @@ public class Genetic_Thread implements Callable<Boolean> {
 		int numberOfCells = this.population.get(parent1).size();
 		double[][] child = new double[2][numberOfCells];
 
-		System.arraycopy(this.population.get(parent1).getCells(), 0, child[0], 0,
-				numberOfCells);
-		System.arraycopy(this.population.get(parent2).getCells(), 0, child[1], 0,
-				numberOfCells);
+		System.arraycopy(this.population.get(parent1).getCells(), 0, child[0],
+				0, numberOfCells);
+		System.arraycopy(this.population.get(parent2).getCells(), 0, child[1],
+				0, numberOfCells);
 
 		if (rand.nextInt(10) < 7) // 70% chance of crossover
 		{
@@ -83,8 +86,8 @@ public class Genetic_Thread implements Callable<Boolean> {
 					child[1][i] = temp;
 				}
 			}
-			
-			//shuffle
+
+			// shuffle
 			for (int col = numberOfCells - 1; col > 0; col--) {
 				int index = rand.nextInt(numberOfCells);
 				int row = 0;
@@ -96,7 +99,7 @@ public class Genetic_Thread implements Callable<Boolean> {
 					row++;
 				}
 			}
-			
+
 		}
 		return child;
 	}
@@ -108,21 +111,55 @@ public class Genetic_Thread implements Callable<Boolean> {
 		Random rand = new Random();
 		int numberOfCells = cells.length;
 
-		for (int i = 0; i < numberOfCells; i++) {
+		if (this.function.equals("RosenBrock")) {
+			
+			for (int i = 0; i < numberOfCells; i++) {
 				if (rand.nextInt(100) < 1) {
 					double RandomValue = rand.nextInt(1000) - 500;
 					RandomValue = RandomValue / 1000;
 					double newNumber = cells[i] + (RandomValue);
 					if (newNumber > 500) {
 						newNumber = 500;
-					} 
-					else if (newNumber < -500) {
+					} else if (newNumber < -500) {
 						newNumber = -500;
 					}
 					cells[i] = newNumber;
 				}
 			}
-		
+		} 
+		else if(this.function.equals("Scheweful"))
+		{
+			for (int i = 0; i < numberOfCells; i++) {
+				if (rand.nextInt(100) < 1) {
+					double RandomValue = rand.nextInt(1000) - 500;
+					RandomValue = RandomValue / 1000;
+					double newNumber = cells[i] + (RandomValue);
+					if (newNumber > 510) {
+						newNumber = 500;
+					} else if (newNumber < -510) {
+						newNumber = -500;
+					}
+					cells[i] = newNumber;
+				}
+			}
+
+		}
+		else if(this.function.equals("Rastrigin")){
+			for (int i = 0; i < numberOfCells; i++) {
+				if (rand.nextInt(100) < 1) {
+					double RandomValue = rand.nextInt(1000) - 500;
+					RandomValue = RandomValue / 1000;
+					double newNumber = cells[i] + (RandomValue);
+					if (newNumber > 5.12) {
+						newNumber = 5.12;
+					} else if (newNumber < -5.12) {
+						newNumber = -500;
+					}
+					cells[i] = newNumber;
+				}
+			}
+			
+		}
 		return cells;
 	}
 }
